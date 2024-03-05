@@ -30,6 +30,7 @@ export interface ExtensionSettings {
   validation: {
     enabled: boolean;
     lint: { enabled: boolean; path: string; arguments: string };
+    gatekeeper: { enabled: boolean; path: string; arguments: string };
   };
   executionEnvironment: {
     enabled: boolean;
@@ -121,6 +122,20 @@ interface ValidationSettingsWithDescription {
     description: string;
   };
   lint: {
+    enabled: {
+      default: boolean;
+      description: string;
+    };
+    path: {
+      default: string;
+      description: string;
+    };
+    arguments: {
+      default: string;
+      description: string;
+    };
+  };
+  gatekeeper: {
     enabled: {
       default: boolean;
       description: string;

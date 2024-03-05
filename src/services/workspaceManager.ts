@@ -9,6 +9,7 @@ import {
 import { AnsibleConfig } from "./ansibleConfig";
 import { AnsibleLint } from "./ansibleLint";
 import { AnsiblePlaybook } from "./ansiblePlaybook";
+import { AnsibleGatekepeer } from "./ansibleGatekeeper";
 import { DocsLibrary } from "./docsLibrary";
 import { ExecutionEnvironment } from "./executionEnvironment";
 import { MetadataLibrary } from "./metadataLibrary";
@@ -137,6 +138,7 @@ export class WorkspaceFolderContext {
   private _ansibleInventory: Thenable<AnsibleInventory> | undefined;
   private _ansibleLint: AnsibleLint | undefined;
   private _ansiblePlaybook: AnsiblePlaybook | undefined;
+  private _ansibleGatekeeper: AnsibleGatekepeer | undefined;
 
   constructor(
     connection: Connection,
@@ -223,6 +225,13 @@ export class WorkspaceFolderContext {
       this._ansiblePlaybook = new AnsiblePlaybook(this.connection, this);
     }
     return this._ansiblePlaybook;
+  }
+
+  public get ansibleGatekeeper(): AnsibleGatekepeer {
+    if (!this._ansibleGatekeeper) {
+      this._ansibleGatekeeper = new AnsibleGatekepeer(this.connection, this);
+    }
+    return this._ansibleGatekeeper;
   }
 
   public get executionEnvironment(): Thenable<ExecutionEnvironment> {

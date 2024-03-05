@@ -124,6 +124,21 @@ export class SettingsManager {
             "Optional command line arguments to be appended to ansible-lint invocation",
         },
       },
+      gatekeeper: {
+        enabled: {
+          default: true,
+          description: "Toggle Ansible Policy validation support",
+        },
+        path: {
+          default: "ansible-gatekeeper",
+          description: "Path to the ansible-gatekeeper executable",
+        },
+        arguments: {
+          default: "",
+          description:
+            "Optional command line arguments to be appended to ansible-gatekeeper invocation",
+        },
+      },
     },
   };
 

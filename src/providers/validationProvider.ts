@@ -52,8 +52,9 @@ export async function doValidate(
       const lintExecutable = settings.executionEnvironment.enabled
         ? "ansible-lint"
         : settings.validation.lint.path;
-      const lintAvailability =
-        await commandRunner.getExecutablePath(lintExecutable);
+      const lintAvailability = await commandRunner.getExecutablePath(
+        lintExecutable,
+      );
       connection?.console.log(`Path for lint: ${lintAvailability}`);
 
       if (lintAvailability) {
@@ -72,14 +73,39 @@ export async function doValidate(
 
       if (isPlaybook(textDocument)) {
         connection?.console.log("playbook file");
-        diagnosticsByFile =
-          await context.ansiblePlaybook.doValidate(textDocument);
+        diagnosticsByFile = await context.ansiblePlaybook.doValidate(
+          textDocument,
+        );
       } else {
         connection?.console.log("non-playbook file");
         diagnosticsByFile = new Map<string, Diagnostic[]>();
       }
     }
 
+    // Ansible policy validation
+    if (settings.validation.gatekeeper.enabled) {
+      const commandRunner = new CommandRunner(connection, context, settings);
+      const policyExecutable = settings.executionEnvironment.enabled
+        ? "ansible-gatekeeper"
+        : settings.validation.gatekeeper.path;
+      const policyAvailability = await commandRunner.getExecutablePath(
+        policyExecutable,
+      );
+      connection?.console.log(
+        `Path for policy validation: ${policyAvailability}`,
+      );
+
+      if (policyAvailability) {
+        connection?.console.log("Validating using ansible-gatekeeper");
+        diagnosticsByFile = await context.ansibleGatekeeper.doValidate(
+          textDocument,
+        );
+      } else {
+        connection?.window.showErrorMessage(
+          "ansible-gatekeeper is not available. Kindly check the path or disable policy validation using ansible-gatekeeper",
+        );
+      }
+    }
     if (!diagnosticsByFile.has(textDocument.uri)) {
       // In case there are no diagnostics for the file that triggered the
       // validation, set an empty array in order to clear the validation.
