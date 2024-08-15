@@ -52,9 +52,8 @@ export async function doValidate(
       const lintExecutable = settings.executionEnvironment.enabled
         ? "ansible-lint"
         : settings.validation.lint.path;
-      const lintAvailability = await commandRunner.getExecutablePath(
-        lintExecutable,
-      );
+      const lintAvailability =
+        await commandRunner.getExecutablePath(lintExecutable);
       connection?.console.log(`Path for lint: ${lintAvailability}`);
 
       if (lintAvailability) {
@@ -73,9 +72,8 @@ export async function doValidate(
 
       if (isPlaybook(textDocument)) {
         connection?.console.log("playbook file");
-        diagnosticsByFile = await context.ansiblePlaybook.doValidate(
-          textDocument,
-        );
+        diagnosticsByFile =
+          await context.ansiblePlaybook.doValidate(textDocument);
       } else {
         connection?.console.log("non-playbook file");
         diagnosticsByFile = new Map<string, Diagnostic[]>();
@@ -83,26 +81,33 @@ export async function doValidate(
     }
 
     // Ansible policy validation
-    if (settings.validation.gatekeeper.enabled) {
+    if (settings.validation.policyCheck.enabled) {
       const commandRunner = new CommandRunner(connection, context, settings);
-      const policyExecutable = settings.executionEnvironment.enabled
-        ? "ansible-gatekeeper"
-        : settings.validation.gatekeeper.path;
-      const policyAvailability = await commandRunner.getExecutablePath(
-        policyExecutable,
-      );
+
+      let policyExecutablePath = "ansible-gatekeeper";
+      if (
+        !settings.executionEnvironment.enabled &&
+        settings.validation.policyEngine.path &&
+        settings.validation.policyEngine.path !== ""
+      ) {
+        policyExecutablePath = settings.validation.policyEngine.path;
+      }
       connection?.console.log(
-        `Path for policy validation: ${policyAvailability}`,
+        `Path for policy engine: ${policyExecutablePath}`,
+      );
+      const policyAvailability =
+        await commandRunner.getExecutablePath(policyExecutablePath);
+      connection?.console.log(
+        `Complete path for policy validation: ${policyAvailability}`,
       );
 
       if (policyAvailability) {
-        connection?.console.log("Validating using ansible-gatekeeper");
-        diagnosticsByFile = await context.ansibleGatekeeper.doValidate(
-          textDocument,
-        );
+        connection?.console.log("Validating using Ansible policy rule engine");
+        diagnosticsByFile =
+          await context.ansiblePolicyEngine.doValidate(textDocument);
       } else {
         connection?.window.showErrorMessage(
-          "ansible-gatekeeper is not available. Kindly check the path or disable policy validation using ansible-gatekeeper",
+          "Ansible policy engine is not available. Kindly check the path or disable policy validation using Ansible policy engine",
         );
       }
     }
